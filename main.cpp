@@ -6,7 +6,8 @@
 #include <fstream>
 
 using namespace std;
-struct rgb
+
+struct rgb 
 {
 	unsigned char b;
 	unsigned char g;
@@ -19,6 +20,8 @@ struct ycbcr
 	unsigned char cb;
 	unsigned char cr;
 };
+
+
 
 const unsigned colorMaskRed = 0x1;
 const unsigned colorMaskGreen = 0x2;
@@ -146,28 +149,37 @@ public:
 
 class BmpProcessor
 {
-
-
 	ycbcr rgb2ycbcr(rgb src);
 	void extractColors(BmpFile &data, unsigned colorMask);
 
-	
-
 public:
 	double PSNR(BmpFile &data_in, BmpFile &data_out, unsigned char color);
+	
 	void extractGreen(BmpFile &data) { extractColors(data, colorMaskGreen); }
+	
 	void extractBlue(BmpFile &data)  { extractColors(data, colorMaskBlue); }
+	
 	void extractRed(BmpFile &data)   { extractColors(data, colorMaskRed); }
+	
 	void extractYCbCr(BmpFile &data, unsigned color);
+	
 	unsigned char getYCbCr(BmpFile &data, unsigned type);
+	
 	void extractY(BmpFile &data)     { extractYCbCr(data, colorMaskY); }
+	
 	void extractCb(BmpFile &data)    { extractYCbCr(data, colorMaskCb); }
+	
 	void extractCr(BmpFile &data)    { extractYCbCr(data, colorMaskCr); }
+	
 	double MO(BmpFile &data, unsigned color);
-	double MO(IPixelComponentBlock &data);
+	
+	double MO(IPixelComponentBlock &data); // mean value
+	
 	double sigma(BmpFile &data, unsigned color);
 	double sigma(IPixelComponentBlock &data);
-	double BmpProcessor::Korr( BmpFile &data, unsigned color1, unsigned color2, int x, int y);
+	
+	double BmpProcessor::Korr( BmpFile &data, unsigned color1, unsigned color2, int x, int y); //correlation
+	
 	void mergeYCbCr(BmpFile &dst,  BmpFile &ydata,  BmpFile &cbdata,  BmpFile &crdata);
 
 	void decimateByDublication(BmpFile &data, int k);
@@ -175,6 +187,7 @@ public:
 
 	void mirror_vert(BmpFile &data);
 	void mirror_goriz(BmpFile &data);
+	
 	void turn_90(BmpFile &data);
 	void turn_180(BmpFile &data);
 	void turn_270(BmpFile &data);
@@ -182,8 +195,6 @@ public:
 	vector<int> DPCM(IPixelComponentBlock &data, int r);
 
 };
-
-
 
 ycbcr BmpProcessor::rgb2ycbcr(rgb src)
 {
@@ -514,6 +525,7 @@ bool BmpFile::save(string filename)
 
 int main()
 {
+	//examples of usage
 	BmpFile bf, bt, bcr, by, bcb, bx, btcb, btcr;
 	BmpProcessor bp;
 	bf.load("output.bmp");
@@ -536,206 +548,7 @@ int main()
 	bp.mirror_vert(bt);
 	bt.save("lena_mirror.bmp");
 
-	vector <int> rool1;
-	vector <int> rool2;
-	vector <int> rool3;
-	vector <int> rool4;
-
-	double fqDPCM1[512] = { 0 };
-	int fqDPCM2[512] = { 0 };
-	int fqDPCM3[512] = { 0 };
-	int fqDPCM4[512] = { 0 };
-	int fqDPCM5[512] = { 0 };
-	int fqDPCM6[512] = { 0 };
-	int fqDPCM7[512] = { 0 };
-	int fqDPCM8[512] = { 0 };
-
-
-
-	bt = bf;
-	BmpFilePixelComponentBlock z1(&bt, 0, 0, colorMaskBlue);
-	rool1 = bp.DPCM(z1, 1);
-	for (int i = 0; i < rool1.size(); i++) {
-		fqDPCM5[rool1.at(i)+255]++;
-	}
-	rool2 = bp.DPCM(z1, 2);
-	for (int i = 0; i < rool2.size(); i++) {
-		fqDPCM6[rool2.at(i)+255]++;
-	}
-	rool3 = bp.DPCM(z1, 3);
-	for (int i = 0; i < rool3.size(); i++) {
-		fqDPCM7[rool3.at(i)+255]++;
-	}
-	rool4 = bp.DPCM(z1, 4);
-	for (int i = 0; i < rool4.size(); i++) {
-		fqDPCM8[rool4.at(i)+255]++;
-	}
-
-	BmpFilePixelComponentBlock z(&bf, 0, 0, colorMaskGreen);
-	rool1 = bp.DPCM(z, 1);
-	for (int i = 0; i < rool1.size(); i++) {
-		fqDPCM1[rool1.at(i) + 255]++;
-	}
-	rool2 = bp.DPCM(z, 2);
-	for (int i = 0; i < rool2.size(); i++) {
-		fqDPCM2[rool2.at(i) + 255]++;
-	}
-	rool3 = bp.DPCM(z, 3);
-	for (int i = 0; i < rool3.size(); i++) {
-		fqDPCM3[rool3.at(i) + 255]++;
-
-	}
-	rool4 = bp.DPCM(z, 4);
-	for (int i = 0; i < rool4.size(); i++) {
-		fqDPCM4[rool4.at(i) + 255]++;
-	}
-	ofstream out1("rool1.txt");
-	ofstream out2("rool2.txt");
-	ofstream out3("rool3.txt");
-	ofstream out4("rool4.txt");
-	cout << sizeof(fqDPCM1) << endl;
-	for (int i = 0; i < sizeof(fqDPCM1) / sizeof(fqDPCM1[0]); i++) {
-		out1 << fqDPCM1[i] << ' ' << endl;
-		out2 << fqDPCM2[i] << ' ' << endl;
-		out3 << fqDPCM3[i] << ' ' << endl;
-		out4 << fqDPCM4[i] << ' ' << endl;
-	}
-
-	out1.close();
-	out2.close();
-	out3.close();
-	out4.close();
-
-
-	bx = bf;
-	double Hr = 0, Hg = 0, Hb = 0, Hy = 0, Hcb = 0, Hcr = 0;
-
-
-	ofstream outR("R.txt");
-	ofstream outG("G.txt");
-	ofstream outB("B.txt");
-
-	double fqR[255] = { 0 };
-	double fqG[255] = { 0 };
-	double fqB[255] = { 0 };
-	double fqY[255] = { 0 };
-	double fqCb[255] = { 0 };
-	double fqCr[255] = { 0 };
-
-	by = bf; bp.extractY(by);
-	for (int i = 0; i < bt.getPixelCount(); i++) 
-		fqY[by.getPixel(i).r]++;
-
-	bcb = bf; bp.extractCb(bcb);
-	for (int i = 0; i < bt.getPixelCount(); i++)
-		fqCb[bcb.getPixel(i).r]++;
-
-	bcr = bf; bp.extractCr(bcr);
-	for (int i = 0; i < bt.getPixelCount(); i++)
-		fqCr[bcr.getPixel(i).r]++;
-
-		for (int i = 0; i < bf.getPixelCount(); i++) {
-			fqR[bf.getPixel(i).r]++;
-			fqG[bf.getPixel(i).g]++;
-			fqB[bf.getPixel(i).b]++;
-		}
-
-		for (int i = 0; i < 255; i++) {
-			fqDPCM1[i] /= bf.getPixelCount();
-			fqG[i] /= bf.getPixelCount();
-			fqB[i] /= bf.getPixelCount();
-			fqY[i] /= by.getPixelCount();
-			fqCb[i] /= bcb.getPixelCount();
-			fqCr[i] /= bcr.getPixelCount();
-
-
-		}
-		for (int i = 0; i < 255; i++) {
-			if (fqDPCM1[i] != 0)
-				Hr += fqDPCM1[i] * log2(fqDPCM1[i]);
-			if (fqG[i] != 0)
-				Hg += fqG[i] * log2(fqG[i]);
-			if (fqB[i] != 0)
-				Hb += fqB[i] * log2(fqB[i]);
-			if (fqY[i] != 0)
-				Hy += fqY[i] * log2(fqY[i]);
-			if (fqCb[i] != 0)
-				Hcb += fqCb[i] * log2(fqCb[i]);
-			if (fqCr[i] != 0)
-				Hcr += fqCr[i] * log2(fqCr[i]);
-
-		}
-		Hr *= (-1);
-		Hg *= (-1);
-		Hb *= (-1);
-		Hy *= (-1);
-		Hcb *= (-1);
-		Hcr *= (-1);
-
-		for (int i = 0; i < 255; i++) {
-			outR << fqR[i] << ' ' << endl;
-			outG << fqG[i] << ' ' << endl;
-			outB << fqB[i] << ' ' << endl;
-		}
-
-		cout << "_______" << bp.PSNR(by, bf, colorMaskY);
-		bp.mergeYCbCr(bt, by, bcb, bcr);
-			cout << bp.PSNR(bt, bf, colorMaskRed) << endl;
-			cout << bp.PSNR(bt, bf, colorMaskBlue) << endl;
-			cout << bp.PSNR(bt, bf, colorMaskGreen) << endl;
-
-		btcb = bcb;
-		btcr = bcr;
-		bp.decimateByDublication(btcb, 2);
-		bp.decimateByDublication(btcr, 2);
-		bp.mergeYCbCr(bt, by, btcb, btcr);
-		cout << bp.PSNR(bt, bf, colorMaskRed) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskBlue) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskGreen) << endl;
-		cout << bp.PSNR(btcb, bcb, colorMaskRed) << endl;
-	  cout << bp.PSNR(btcr, bcr, colorMaskRed) << endl;
-
-		btcb = bcb;
-		btcr = bcr;
-		bp.decimateByDublication(btcb, 4);
-		bp.decimateByDublication(btcr, 4);
-		bp.mergeYCbCr(bt, by, btcb, btcr);
-		cout << bp.PSNR(bt, bf, colorMaskRed) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskBlue) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskGreen) << endl;
-		cout << bp.PSNR(btcb, bcb, colorMaskRed) << endl;
-		cout << bp.PSNR(btcr, bcr, colorMaskRed) << endl;
-
-		btcb = bcb;
-		btcr = bcr;
-		bp.decimateByAvg(btcb, 2);
-		bp.decimateByAvg(btcr, 2);
-		bp.mergeYCbCr(bt, by, btcb, btcr);
-		cout << bp.PSNR(bt, bf, colorMaskRed) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskGreen) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskBlue) << endl;
-		cout << bp.PSNR(btcb, bcb, colorMaskRed) << endl;
-		cout << bp.PSNR(btcr, bcr, colorMaskRed) << endl;
-
-		btcb = bcb;
-		btcr = bcr;
-		bp.decimateByAvg(btcb, 4);
-		bp.decimateByAvg(btcr, 4);
-		bp.mergeYCbCr(bt, by, btcb, btcr);
-		cout << bp.PSNR(bt, bf, colorMaskRed) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskBlue) << endl;
-		cout << bp.PSNR(bt, bf, colorMaskGreen) << endl;
-		cout << bp.PSNR(btcb, bcb, colorMaskRed) << endl;
-		cout << bp.PSNR(btcr, bcr, colorMaskRed) << endl;
-
-		//ofstream out("korr.txt");
-		//for (int i = 0; i < bf.getW() / 4; i += 5)
-		//	out << bp.Korr(bf, colorMaskRed, colorMaskRed, i, 0) << endl;
-		//out.close();
-
-		cout << bf.getPixelCount() << endl;
-		cout << Hr << endl;
-		system("pause");
-		return 0;
+// ...etc
+	return 0;
 	}
 
